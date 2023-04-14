@@ -70,7 +70,7 @@ prompt_template2 = ChatPromptTemplate.from_messages(
         HumanMessagePromptTemplate.from_template(template2)
     ])
 
-transform_json_chain = LLMChain(llm=llm, prompt=prompt_template2)
+transform_json_chain = LLMChain(llm=chat, prompt=prompt_template2)
 
 get_ideas_json_chain = SimpleSequentialChain(
     chains=[get_ideas_chain, transform_json_chain],
