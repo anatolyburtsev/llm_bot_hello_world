@@ -21,7 +21,7 @@ os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 os.environ["GOOGLE_CSE_ID"] = st.secrets["GOOGLE_CSE_ID"]
 os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
 
-llm = OpenAI(temperature=0.9, model_name="gpt-3.5-turbo")
+# llm = OpenAI(temperature=0.9, model_name="gpt-3.5-turbo")
 chat = ChatOpenAI(model_name="gpt-3.5-turbo")
 
 st.write("# Let me find a perfect gift for you on Amazon!")
@@ -91,7 +91,11 @@ except:
     ideas_list = json.loads(ideas_list_string)
     print(f"parsed list: {ideas_list}")
 
-st.success(f"Here is a list of ideas: {ideas_list}")
+ideas_list_formatted = '\n-'.join(ideas_list)
+
+st.markdown(f"Here is a list of ideas:")
+for idea in ideas_list:
+    st.write(f"\t- {idea}")
 
 # st.write(f"Here is a list of gift ideas: {ideas_list}.")
 st.write(f"Let me find best relevant items on Amazon...")
@@ -115,37 +119,55 @@ for idea in ideas_list:
         "link": x["link"],
         "title": x["title"]
     } for x in search_results if "/dp/" in x["link"]]
-    # print(f'search_results_only_asin_links: {search_results_only_asin_links}')
+    print(f'search_results_only_asin_links: {search_results_only_asin_links}')
     if not search_results_only_asin_links:
         continue
 
+    search_results_only_titles = [x["title"] for x in search_results_only_asin_links]
+
     # Chain 4 choose best
-    system_message_4 = """You are an experienced amazon shopper and know people very well. You would need to pick best 
-    gift from the list of ideas for a given request. Response in the same format as a json array.
+    system_message_4 = """You are an experienced amazon shopper and know people very well. You would need to choose 2 
+    best gifts from the list of ideas for a given request. Response should be array with element number.
+    Example:
+    ideas:  ['World of Tanks Halloween Tank Skull T-Shirt ... - Amazon.com', 'World of Tanks T57 Heavy Tank "Tried n\' True" T-Shirt ... - Amazon.com', 'Amazon.com: World of Tanks Skoda T 27 "Bohemian Warrior" T-Shirt', 'World of Tanks Santa & Tankdeer T-Shirt : Clothing ... - Amazon.com', 'World of Tanks CS-52 LIS Fox T-Shirt', 'World of Tanks Blitz Legendary Sherman T-Shirt', 'World of Tanks M48A5 Patton T-Shirt : Clothing ... - Amazon.com', 'World of Tanks Blitz Classy T-Shirt : Clothing, Shoes ... - Amazon.com']
+    request: "gift for a friend who loves world of tanks game"
+    response: [0, 3, 5]
+     
     """
     template_4 = """
-    Here is a list of available items: {search_results}. Choose 2 which fit best for the following request: {request}. 
-    Return only json array.
+    ideas: {search_results}. 
+    request: {request}. 
+    response:  
     """
 
     prompt_template_4 = PromptTemplate(
         template=template_4,
         input_variables=["search_results", "request"]
     )
-    prompt_4 = prompt_template_4.format(search_results=str(search_results_only_asin_links), request=request)
+    prompt_4 = prompt_template_4.format(search_results=str(search_results_only_titles), request=request)
 
-    best_ideas_only = chat([
+    best_ideas_ids = chat([
         SystemMessage(content=system_message_4),
         HumanMessage(content=prompt_4)
     ])
-    print(f"best ideas string: {best_ideas_only.content}")
-    cleaned_best_ideas_string = clean_json_string(best_ideas_only.content)
-    print(f"cleaned best ideas string: {cleaned_best_ideas_string}")
-    best_ideas_list = dirtyjson.loads(cleaned_best_ideas_string)
-    print(f"parsed best ideas: {best_ideas_list}")
-    if not best_ideas_list:
+    # print(f"best ideas ids string: {best_ideas_ids.content}")
+    cleaned_best_ideas_string = clean_json_string(best_ideas_ids.content)
+    # print(f"cleaned best ideas ids string: {cleaned_best_ideas_string}")
+    try:
+        best_ideas_ids_list = dirtyjson.loads(cleaned_best_ideas_string)
+    except dirtyjson.error.Error:
+        print(f"dirtyjson failed to parse string: {cleaned_best_ideas_string}")
+        continue
+    print(f"parsed best ideas: {best_ideas_ids_list}")
+    if not best_ideas_ids_list:
+        continue
+
+    best_ideas_list = [search_results_only_asin_links[i] for i in best_ideas_ids_list][:3]
+
+    if type(best_ideas_list[0]) == str or 'link' not in best_ideas_list[0].keys():
+        print(f"GPT provided shrinked list from google response: {best_ideas_list}")
         continue
 
     st.write(f"# Idea: {idea}\n")
-    st.write("\n\n".join(["\n".join([x["title"], x["link"]]) for x in best_ideas_list]))
+    st.write("\n\n".join(["\n".join(list(x.values())) for x in best_ideas_list]))
     st.write("\n")
