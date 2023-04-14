@@ -171,3 +171,5 @@ for idea in ideas_list:
     st.write(f"# Idea: {idea}\n")
     st.write("\n\n".join(["\n".join(list(x.values())) for x in best_ideas_list]))
     st.write("\n")
+
+st.write("Hope you found your perfect gift 🎁!")
