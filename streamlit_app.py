@@ -116,6 +116,8 @@ for idea in ideas_list:
         "title": x["title"]
     } for x in search_results if "/dp/" in x["link"]]
     # print(f'search_results_only_asin_links: {search_results_only_asin_links}')
+    if not search_results_only_asin_links:
+        continue
 
     # Chain 4 choose best
     system_message_4 = """You are an experienced amazon shopper and know people very well. You would need to pick best 
@@ -141,6 +143,8 @@ for idea in ideas_list:
     print(f"cleaned best ideas string: {cleaned_best_ideas_string}")
     best_ideas_list = dirtyjson.loads(cleaned_best_ideas_string)
     print(f"parsed best ideas: {best_ideas_list}")
+    if not best_ideas_list:
+        continue
 
     st.write(f"# Idea: {idea}\n")
     st.write("\n\n".join(["\n".join([x["title"], x["link"]]) for x in best_ideas_list]))
