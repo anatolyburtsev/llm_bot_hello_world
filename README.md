@@ -15,3 +15,11 @@ GOOGLE_API_KEY = "FILL ME"
 ```shell
 streamlit run streamlit_app.py
 ```
+
+
+# Note
+If app started failing to search on google, and google returns error code 429, it means you are out of free quota for custom search.
+
+https://console.cloud.google.com/apis/api/customsearch.googleapis.com/quotas
+
+Enable billing and that quota will increase to 10k per day, (1k costs $5)
