@@ -78,8 +78,6 @@ get_ideas_json_chain = SimpleSequentialChain(
 )
 
 list_of_ideas_raw = get_ideas_json_chain.run(request)
-# list_of_ideas_raw = 'ideas: ["Fitbit or other fitness tracker", "personalized map", "comfortable walking shoes"]'
-st.success(f"Here is a {list_of_ideas_raw}")
 
 ideas_list = []
 
@@ -92,6 +90,8 @@ except:
     print(f"list prepared for json parsing: {ideas_list_string}")
     ideas_list = json.loads(ideas_list_string)
     print(f"parsed list: {ideas_list}")
+
+st.success(f"Here is a list of ideas: {ideas_list}")
 
 # st.write(f"Here is a list of gift ideas: {ideas_list}.")
 st.write(f"Let me find best relevant items on Amazon...")
@@ -121,7 +121,7 @@ for idea in ideas_list:
     gift from the list of ideas for a given request. Response in the same format as a json array.
     """
     template_4 = """
-    Here is a list of available items: {search_results}. Choose 2 which fit best for the following request: {request}. 
+    Here is a list of available items: {search_results}. Choose 3 which fit best for the following request: {request}. 
     Return only json array.
     """
 
