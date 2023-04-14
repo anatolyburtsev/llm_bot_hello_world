@@ -107,6 +107,7 @@ def clean_json_string(input_string):
 
 
 for idea in ideas_list:
+    print(f"processing idea: {idea}")
     search_results = search.results(idea, num_results=10)
 
     search_results_only_asin_links = [{
@@ -114,14 +115,14 @@ for idea in ideas_list:
         "link": x["link"],
         "title": x["title"]
     } for x in search_results if "/dp/" in x["link"]]
-    print(f'search_results_only_asin_links: {search_results_only_asin_links}')
+    # print(f'search_results_only_asin_links: {search_results_only_asin_links}')
 
     # Chain 4 choose best
     system_message_4 = """You are an experienced amazon shopper and know people very well. You would need to pick best 
     gift from the list of ideas for a given request. Response in the same format as a json array.
     """
     template_4 = """
-    Here is a list of available items: {search_results}. Choose 3 which fit best for the following request: {request}. 
+    Here is a list of available items: {search_results}. Choose 2 which fit best for the following request: {request}. 
     Return only json array.
     """
 
