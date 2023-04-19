@@ -112,13 +112,14 @@ def clean_json_string(input_string):
 
 for idea in ideas_list:
     print(f"processing idea: {idea}")
-    search_results = search.results(idea, num_results=10)
+    search_results_all = search.results(idea, num_results=10)
+    search_results = [x for x in search_results_all if "/dp/" in x["link"]]
 
     search_results_only_asin_links = [{
         # drop 'snippet' here because it's failing json parser sometime
         "link": x["link"],
         "title": x["title"]
-    } for x in search_results if "/dp/" in x["link"]]
+    } for x in search_results]
     print(f'search_results_only_asin_links: {search_results_only_asin_links}')
     if not search_results_only_asin_links:
         continue
@@ -163,7 +164,7 @@ for idea in ideas_list:
     best_ideas_list = [search_results[i] for i in best_ideas_ids_list][:3]
 
     if type(best_ideas_list[0]) == str or 'link' not in best_ideas_list[0].keys():
-        print(f"GPT provided shrinked list from google response: {best_ideas_list}")
+        print(f"GPT provided shrank list from google response: {best_ideas_list}")
         continue
 
     st.write(f"# Idea: {idea}\n")
