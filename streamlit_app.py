@@ -150,9 +150,7 @@ for idea in ideas_list:
         SystemMessage(content=system_message_4),
         HumanMessage(content=prompt_4)
     ])
-    # print(f"best ideas ids string: {best_ideas_ids.content}")
     cleaned_best_ideas_string = clean_json_string(best_ideas_ids.content)
-    # print(f"cleaned best ideas ids string: {cleaned_best_ideas_string}")
     try:
         best_ideas_ids_list = dirtyjson.loads(cleaned_best_ideas_string)
     except dirtyjson.error.Error:
@@ -162,14 +160,17 @@ for idea in ideas_list:
     if not best_ideas_ids_list:
         continue
 
-    best_ideas_list = [search_results_only_asin_links[i] for i in best_ideas_ids_list][:3]
+    best_ideas_list = [search_results[i] for i in best_ideas_ids_list][:3]
 
     if type(best_ideas_list[0]) == str or 'link' not in best_ideas_list[0].keys():
         print(f"GPT provided shrinked list from google response: {best_ideas_list}")
         continue
 
     st.write(f"# Idea: {idea}\n")
-    st.write("\n\n".join(["\n".join(list(x.values())) for x in best_ideas_list]))
+    print(best_ideas_list)
+    for idea_variant in best_ideas_list:
+        st.markdown(f"#### - [{idea_variant['title']}]({idea_variant['link']})\n\n")
+        st.markdown(f"{idea_variant['snippet']}")
     st.write("\n")
 
 st.write("Hope you found your perfect gift 🎁!")
